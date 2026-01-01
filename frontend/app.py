@@ -97,7 +97,7 @@ if st.button("Predict Delay Risk"):
                 response = requests.post(
                     f"{BACKEND_URL}/predict",
                     json=payload,
-                    timeout=30
+                    timeout=120
                 )
 
             if response.status_code == 200:
