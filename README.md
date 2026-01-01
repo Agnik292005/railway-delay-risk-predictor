@@ -6,13 +6,13 @@ A full-stack machine learning web application that predicts the risk of train de
 - **Frontend:** https://railway-delay-risk-predictor-frontend.onrender.com/  
 - **Backend API:** https://railway-delay-risk-predictor.onrender.com/docs  
 
-> Note: The backend is hosted on Render free tier and may take ~3 minutes to wake up on first use.
+> **Note:** The backend is hosted on Render free tier and may take ~2–3 minutes to wake up on first use due to cold-start behavior.
 
 ---
 
 ## 🧠 Problem Statement
 Train delays are influenced by multiple factors such as distance, weather, congestion, and time of travel.  
-This project aims to estimate **delay risk** using a trained machine learning model and expose predictions via a web interface.
+This project estimates **delay risk** using a trained machine learning model and exposes predictions via a web interface.
 
 ---
 
@@ -24,9 +24,9 @@ FastAPI Backend
 ML Model (scikit-learn)
 
 
-- Frontend handles user input and UX
-- Backend exposes prediction API
-- Model is trained and loaded dynamically on server startup
+- Frontend handles user input and user experience
+- Backend exposes REST APIs for prediction
+- ML model is trained offline and loaded during backend startup
 
 ---
 
@@ -44,8 +44,15 @@ ML Model (scikit-learn)
 
 - Predicts **High / Low delay risk**
 - Returns probability score
-- Handles backend cold-start gracefully
+- Frontend handles backend cold-start automatically
 - Fully deployed and accessible globally
+
+## 🧊 Cold-Start Handling (Deployment Note)
+
+The backend service is hosted on Render free tier, which may enter sleep mode during inactivity.  
+To ensure a smooth user experience, the frontend includes logic to automatically handle backend cold-starts before sending prediction requests.
+
+This avoids immediate failures on first use and ensures reliable predictions once the service is active.
 
 ---
 
@@ -55,15 +62,14 @@ ML Model (scikit-learn)
 - Frontend–backend separation
 - Handling cloud free-tier cold starts
 - REST API integration
-- Real-world debugging and deployment
+- Debugging real-world deployment issues
 
 ---
 
 ## 📌 Future Improvements
 
 - Larger, real-world datasets
-- Geospatial visualization of routes
-- Model explainability (SHAP)
-- Real-time weather integration
-
+- Geospatial visualization of railway routes
+- Model explainability (e.g., SHAP)
+- Real-time weather data integration
 
