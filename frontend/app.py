@@ -82,7 +82,7 @@ if st.button("Predict Delay Risk"):
     }
 
     # Step 1: Wake backend FIRST (this is the key fix)
-    with st.spinner("⏳ Waking up backend (may take ~30 seconds on first use)..."):
+    with st.spinner("⏳ Waking up backend (may take 2 to 3 minutes on first use)..."):
         backend_ready = wake_backend()
 
     if not backend_ready:
