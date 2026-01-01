@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import time
 
 # ---------------- Page Config ----------------
 st.set_page_config(
@@ -8,11 +9,33 @@ st.set_page_config(
 )
 
 st.title("🚆 Railway Delay Risk Predictor")
-st.write("Predict whether a train is likely to be delayed based on operational and environmental conditions.")
+st.write(
+    "Predict whether a train is likely to be delayed based on "
+    "operational and environmental conditions."
+)
 
 # ---------------- Backend URL ----------------
-# IMPORTANT: This must be your deployed backend URL
 BACKEND_URL = "https://railway-delay-risk-predictor.onrender.com"
+
+# ---------------- Helper: Wake Backend ----------------
+def wake_backend(max_wait_seconds=40):
+    """
+    Polls /health until backend wakes up or timeout is reached.
+    Returns True if backend is ready, False otherwise.
+    """
+    start_time = time.time()
+
+    while time.time() - start_time < max_wait_seconds:
+        try:
+            r = requests.get(f"{BACKEND_URL}/health", timeout=5)
+            if r.status_code == 200:
+                return True
+        except:
+            pass
+
+        time.sleep(5)  # wait before retrying
+
+    return False
 
 # ---------------- User Inputs ----------------
 distance_km = st.number_input(
@@ -58,35 +81,42 @@ if st.button("Predict Delay Risk"):
         "route_congestion": route_congestion
     }
 
-    try:
-        with st.spinner("🚀 Waking up backend (first request may take ~30–60 seconds)..."):
-            response = requests.post(
-                f"{BACKEND_URL}/predict",
-                json=payload,
-                timeout=30  # VERY IMPORTANT for Render free-tier cold start
-            )
+    # Step 1: Wake backend FIRST (this is the key fix)
+    with st.spinner("⏳ Waking up backend (may take ~30 seconds on first use)..."):
+        backend_ready = wake_backend()
 
-        if response.status_code == 200:
-            result = response.json()
-
-            st.subheader("📊 Prediction Result")
-            st.success(f"Delay Risk: **{result['delay_risk']}**")
-            st.info(f"Probability of Delay: **{result['probability']}**")
-
-        else:
-            st.error("Backend returned an error.")
-            st.code(response.text)
-
-    except requests.exceptions.Timeout:
-        st.warning(
-            "⏳ Backend is waking up. Please wait a moment and click **Predict Delay Risk** again."
-        )
-
-    except requests.exceptions.ConnectionError:
+    if not backend_ready:
         st.error(
-            "❌ Unable to connect to backend. Please try again in a few seconds."
+            "Backend is still waking up.\n\n"
+            "Please wait a few seconds and click **Predict Delay Risk** again."
         )
+    else:
+        # Step 2: Call predict ONLY after backend is awake
+        try:
+            with st.spinner("📊 Predicting delay risk..."):
+                response = requests.post(
+                    f"{BACKEND_URL}/predict",
+                    json=payload,
+                    timeout=30
+                )
 
-    except Exception as e:
-        st.error("Unexpected error occurred.")
-        st.exception(e)
+            if response.status_code == 200:
+                result = response.json()
+
+                st.subheader("📈 Prediction Result")
+                st.success(f"Delay Risk: **{result['delay_risk']}**")
+                st.info(f"Probability of Delay: **{result['probability']}**")
+
+            else:
+                st.error("Backend returned an error.")
+                st.code(response.text)
+
+        except requests.exceptions.Timeout:
+            st.error("Prediction timed out. Please try again.")
+
+        except requests.exceptions.ConnectionError:
+            st.error("Unable to connect to backend.")
+
+        except Exception as e:
+            st.error("Unexpected error occurred.")
+            st.exception(e)
