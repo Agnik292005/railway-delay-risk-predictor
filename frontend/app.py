@@ -55,10 +55,13 @@ if st.button("Predict Delay Risk"):
     }
 
     try:
+        BACKEND_URL = "https://railway-delay-risk-predictor.onrender.com"
+
         response = requests.post(
-            "http://127.0.0.1:8000/predict",
-            json=payload
+           f"{BACKEND_URL}/predict",
+           json=payload
         )
+
 
         if response.status_code == 200:
             result = response.json()
