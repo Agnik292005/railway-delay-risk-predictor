@@ -63,7 +63,7 @@ if st.button("Predict Delay Risk"):
             response = requests.post(
                 f"{BACKEND_URL}/predict",
                 json=payload,
-                timeout=90  # VERY IMPORTANT for Render free-tier cold start
+                timeout=30  # VERY IMPORTANT for Render free-tier cold start
             )
 
         if response.status_code == 200:
